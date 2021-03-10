@@ -2,6 +2,8 @@ module FMTM.Functor where
 
 import Prelude
 
+import Effect.Exception.Unsafe (unsafeThrow)
+
 class Functor k where
   fmap :: 
     forall a b.
@@ -15,4 +17,6 @@ data Box a = Box a
 derive instance eqBox :: Eq a => Eq (Box a)
 
 instance boxFunctor :: Functor Box where
-  fmap f (Box a) = Box $ f a
+  fmap f (Box a) = Box (f a)
+
+
