@@ -9,6 +9,7 @@ You can edit this file as you like.
   , "debug"
   , "effect"
   , "fixed-points"
+  , "lazy"
   , "matryoshka"
   , "psci-support"
   , "quickcheck"

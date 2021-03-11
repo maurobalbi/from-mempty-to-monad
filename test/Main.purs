@@ -25,7 +25,7 @@ main :: Effect Unit
 main = printErrorMessage $ printErrorMessage $ functorTest
 
 functorTest :: Effect Unit
-functorTest = quickCheck \n -> ((_ + 1) <$> Box (n)) == Box (n + 1)
+functorTest = quickCheck \n -> ((_ + 1) <$> Box (n)) == Box (n + 2)
 
 printErrorMessage :: Effect Unit -> Effect Unit
 printErrorMessage test = catchException (\e -> log $ message e) do 
