@@ -11,34 +11,22 @@ module Test.Framework(
 
 import Prelude
 
-import Data.Array.NonEmpty (intercalate)
-import Data.Either (Either(..))
 import Data.Foldable (sequence_)
 import Data.Functor.Mu (Mu)
-import Data.Generic.Rep (class Generic)
 import Data.Lazy (Lazy, defer, force)
 import Data.Lazy (Lazy, defer, force) as Lazy
-import Data.List (List, length)
-import Data.Newtype (overF)
-import Data.Semiring.Generic (genericOne)
-import Data.Show.Generic (genericShow)
+import Data.List (length)
 import Effect (Effect)
 import Effect.Class.Console (log)
-import Effect.Exception (catchException, message, throw, try)
-import Math (e)
-import Matryoshka (class Corecursive, class Recursive, Algebra, cata, embed)
-import Test.Catch (unsafeCatch)
-import Test.Main (printErrorMessage)
+import Effect.Exception (throw)
+import Matryoshka (class Corecursive, Algebra, cata, embed)
+import Test.UnsafeCatch (unsafeCatchPurely)
 import Test.QuickCheck (Result(..))
 import Test.QuickCheck as P
-import Test.QuickCheck.Gen (sample)
 import Unsafe.Coerce (unsafeCoerce)
 
 notImplementedError :: forall a. String -> a
 notImplementedError s =  unsafeCoerce $ throw $ "Not implemented: " <> s
-
-evaluate :: forall a. (Unit -> a) -> a
-evaluate = unsafeCoerce
 
 data TestTreeF a
   = Single String (Lazy P.Result)
@@ -70,7 +58,7 @@ testProperty label a = single label $ go a
         | otherwise -> P.Failed $ (show $ length failures) <> "/" <> show total <> " tests failed."
 
 testF :: Algebra (TestTreeF) (Effect Unit)
-testF (Single s res ) = log $ unsafeCatch (\_ -> formatResult $ force res) formatError
+testF (Single s res ) = log $ unsafeCatchPurely (\_ -> formatResult $ force res) formatError
   where 
     formatError e = "FAILED: '" <> s <> "'" <> "\n  " <> e
     formatResult (Failed e) = formatError e
