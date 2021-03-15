@@ -20,9 +20,9 @@ import Effect (Effect)
 import Effect.Class.Console (log)
 import Effect.Exception (throw)
 import Matryoshka (class Corecursive, Algebra, cata, embed)
-import Test.UnsafeCatch (unsafeCatchPurely)
 import Test.QuickCheck (Result(..))
 import Test.QuickCheck as P
+import Test.UnsafeCatch (unsafeCatchPurely)
 import Unsafe.Coerce (unsafeCoerce)
 
 notImplementedError :: forall a. String -> a
