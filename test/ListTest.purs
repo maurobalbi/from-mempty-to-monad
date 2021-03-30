@@ -22,5 +22,5 @@ headOrTest =
   testGroup "headOr" [
      testCase "headOr on non-empty list" $ \_ -> headOr2 3 (1 : 2 : Nil) === 1
    , testCase "headOr on empty list" $ \_ -> headOr 3 Nil === 3
-   , testProperty "headOr on empty list" $ \n-> n == n + 1
+   , testProperty "headOr on empty list" $ \n-> n == n + 0
   ]

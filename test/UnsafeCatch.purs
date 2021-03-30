@@ -1,5 +1,6 @@
 module Test.UnsafeCatch where
 
-import Data.Unit
+import Data.Unit (Unit)
+import Effect (Effect)
 
-foreign import unsafeCatchPurely :: (Unit -> String) -> (String -> String) -> String
+foreign import unsafeCatch :: (String -> Effect Unit) -> (Unit -> Effect Unit) ->  Effect Unit

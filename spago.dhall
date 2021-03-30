@@ -8,6 +8,7 @@ You can edit this file as you like.
   , "console"
   , "debug"
   , "effect"
+  , "errors"
   , "fixed-points"
   , "lazy"
   , "matryoshka"

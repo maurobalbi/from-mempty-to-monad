@@ -4,52 +4,43 @@ module Test.Framework(
   , testProperty
   , testCase
   , test
-  , TestTreeF
   , TestTree
   , module Lazy
 ) where
 
 import Prelude
 
-import Data.Foldable (sequence_)
-import Data.Functor.Mu (Mu)
+import Control.Error.Util (bool)
+import Data.Array (intercalate)
+import Data.Foldable (traverse_)
 import Data.Lazy (Lazy, defer, force)
 import Data.Lazy (Lazy, defer, force) as Lazy
 import Data.List (length)
+import Data.String (null)
 import Effect (Effect)
 import Effect.Class.Console (log)
 import Effect.Exception (throw)
-import Matryoshka (class Corecursive, Algebra, cata, embed)
+import Test.UnsafeCatch (unsafeCatch)
 import Test.QuickCheck (Result(..))
 import Test.QuickCheck as P
-import Test.UnsafeCatch (unsafeCatchPurely)
 import Unsafe.Coerce (unsafeCoerce)
 
 notImplementedError :: forall a. String -> a
 notImplementedError s =  unsafeCoerce $ throw $ "Not implemented: " <> s
 
-data TestTreeF a
+data TestTree
   = Single String (Lazy P.Result)
-  | Tree String (Array a)
+  | Tree String (Array TestTree)
 
-derive instance functorTestTreeF :: Functor TestTreeF
-
-single :: forall t. Corecursive t (TestTreeF) => String -> (Lazy P.Result) -> t
-single s r = embed $ Single s r
-
-tree :: forall t. Corecursive t (TestTreeF) => String -> Array t -> t
-tree s t = embed $ Tree s t
-
-type TestTree = Mu TestTreeF
 
 testGroup :: String -> Array TestTree -> TestTree
-testGroup = tree
+testGroup = Tree
 
 testCase :: String -> (Unit -> P.Result) -> TestTree
-testCase s r = single s $ defer r 
+testCase s r= Single s $ defer r 
 
 testProperty :: forall a. P.Testable a => String -> a -> TestTree
-testProperty label a = single label $ go a
+testProperty label a = Single label $ go a
   where
     go :: P.Testable a => a -> (Lazy P.Result)
     go prop = defer $ \_ -> case P.checkResults $ P.quickCheckPure' (P.mkSeed 1) 100 prop of 
@@ -57,15 +48,23 @@ testProperty label a = single label $ go a
         | successes == total -> P.Success
         | otherwise -> P.Failed $ (show $ length failures) <> "/" <> show total <> " tests failed."
 
-testF :: Algebra (TestTreeF) (Effect Unit)
-testF (Single s res ) = log $ unsafeCatchPurely (\_ -> formatResult $ force res) formatError
-  where 
-    formatError e = "FAILED: '" <> s <> "'" <> "\n  " <> e
-    formatResult (Failed e) = formatError e
-    formatResult Success = "PASSED: '" <> s <> "'"
-testF (Tree s as) = do
-  log s 
-  sequence_ as
-
 test :: TestTree -> Effect Unit
-test = cata testF
+test  = go ""
+  where 
+    qualifiedName s s' = bool (intercalate "." [s, s']) s' (null s)
+    
+    go s (Single s' a) =
+      let quote x = "'" <> x <> "'"
+          qName = quote (qualifiedName s s')
+
+          printFailure e = do
+            log ""
+            log $ "FAILED: " <> qName 
+            log $ "  " <> e
+          printResult (Failed e) = printFailure e
+          printResult Success  = log $ "PASSED: " <> qName
+        in 
+          unsafeCatch printFailure $ (\_ -> printResult $ force a)
+    go s (Tree s' ts) = traverse_ (go (qualifiedName s s')) ts
+
+

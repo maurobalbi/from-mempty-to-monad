@@ -1,12 +1,12 @@
 "use strict";
 
-exports.unsafeCatchPurely = (fn) => {
-    return (error_message) => {
+exports.unsafeCatch = (fn) => {
+    return (fn2) => {
         try {
-            return fn()
+            return fn2()
         }
         catch (e) {
-            return error_message(e.message)
+            return fn(e)
         } 
     }
 

@@ -3,9 +3,7 @@ module FMTM.List where
 import Prelude
 
 import Data.Array (cons, intercalate)
-import Partial.Unsafe (unsafeCrashWith)
 import Test.Framework (notImplementedError)
-import Unsafe.Coerce (unsafeCoerce)
 
 data List a =
     Nil
