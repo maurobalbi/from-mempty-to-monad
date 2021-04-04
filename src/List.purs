@@ -38,7 +38,7 @@ headOr ::
   a
   -> List a
   -> a
-headOr = notImplementedError "headOr"
+headOr = ?t
 
   
 headOr2 ::
